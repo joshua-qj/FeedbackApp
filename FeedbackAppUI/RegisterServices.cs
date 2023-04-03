@@ -1,11 +1,24 @@
-﻿namespace FeedbackAppUI;
+﻿using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.Identity.Web;
+using Microsoft.Identity.Web.UI;
+
+namespace FeedbackAppUI;
 
 public static class RegisterServices {
   public static void ConfigureService(this WebApplicationBuilder builder) {
     // Add services to the container.
     builder.Services.AddRazorPages();
+    builder.Services.AddServerSideBlazor().AddMicrosoftIdentityConsentHandler();
     builder.Services.AddServerSideBlazor();
+    builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
+      .AddMicrosoftIdentityWebApp(builder.Configuration.GetSection("AzureAdB2C"));
+    builder.Services.AddAuthorization(options => {
+      options.AddPolicy("Admin", policy => {
+        policy.RequireClaim("jobTitle", "Admin");
+      });
+    });
     builder.Services.AddMemoryCache();
+    builder.Services.AddControllersWithViews().AddMicrosoftIdentityUI();
     //this is a web project,all web project built with cache,
     //blazor server, it's already include memory cache package,
     //library project need to install a memory package, it's not a web project.

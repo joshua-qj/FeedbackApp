@@ -7,7 +7,7 @@ public class MongoFeedbackData : IFeedbackData {
   private readonly IMemoryCache _cache;
   private readonly IMongoCollection<FeedbackModel> _feedbacks;
   private const string CacheName = "FeedbackData";
-
+ 
   public MongoFeedbackData(IDbConection db, IUserData userData, IMemoryCache cache) {
     _db = db;
     _userData = userData;
@@ -16,10 +16,20 @@ public class MongoFeedbackData : IFeedbackData {
   }
   public async Task<List<FeedbackModel>> GetAllFeedbacks() {
     var output = _cache.Get<List<FeedbackModel>>(CacheName);
-    if (output is not null) {
+    if (output is  null) {
       var results = await _feedbacks.FindAsync(f => f.Archived == false);
       output = results.ToList();
       _cache.Set(CacheName, output, TimeSpan.FromMinutes(1));
+    }
+    return output;
+  }
+
+  public async Task<List<FeedbackModel>> GetUsersFeedbacks(string userId) {
+    var output = _cache.Get<List<FeedbackModel>>(userId);
+    if (output is null) {
+      var results = await _feedbacks.FindAsync(f => f.Author.Id == userId);
+      output = results.ToList();
+      _cache.Set(userId, output, TimeSpan.FromMinutes(1));
     }
     return output;
   }

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using FeedbackAppUI;
+using Microsoft.AspNetCore.Rewrite;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +23,16 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.UseRewriter(new Microsoft.AspNetCore.Rewrite.RewriteOptions().Add(
+  context => {
+    if (context.HttpContext.Request.Path == "/MicrosoftIdentity/Account/SignedOut") {
+      context.HttpContext.Response.Redirect("/");
+    }
+  }));
+app.MapControllers();
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
 

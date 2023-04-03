@@ -1,0 +1,187 @@
+﻿@page "/Profile"
+@attribute [Authorize]
+@inject IFeedbackData feedbackData
+@inject IUserData userData
+@inject NavigationManager navManager
+
+<h1>My Profile</h1>
+<div>
+    <div>
+        <button @onclick="ClosePage"></button>
+    </div>
+</div>
+
+<div>
+    <h2>My Account</h2>
+    <p>
+        <a href="MicrosoftIdentity/Account/EditProfile">
+            Edit My Profile
+        </a>
+    </p>
+</div>
+
+@*<div>
+    <h2>Confirmed Feedbacks</h2>
+    <p>There are your feedbacks tha are currently active</p>
+    @foreach (var f in confirmed)
+    {
+        <hr />
+        <div>
+            @f.Feedback
+        </div>
+        <p>@f.DateCreated.ToString("MM.dd.yyyy")</p>
+        <p>Total Votes:@f.UserVotes.Count</p>
+        <p>@f.VehicleModel.VehicleName</p>
+        <p>@f.Description</p>
+        @if (f.FeedbackStatus is not null) {
+            <div>
+                @f.FeedbackStatus.StatusName
+            </div>
+            <p>
+                @((MarkupString)f.OwnerNotes)
+            </p>
+        }
+    }
+</div>*@
+
+@if (confirmed?.Count > 0)
+{
+    <div>
+        <h2>Confirmed Feedbacks</h2>
+        <p>There are your feedbacks tha are currently active</p>
+        @foreach (var f in confirmed)
+        {
+            <hr />
+            <div>
+                @f.Feedback
+            </div>
+            <p>@f.DateCreated.ToString("MM.dd.yyyy")</p>
+            <p>Total Votes:@f.UserVotes?.Count</p>
+            <p>@f.VehicleModel.VehicleName</p>
+            <p>@f.Description</p>
+            @if (f.FeedbackStatus is not null)
+            {
+                <div>
+                    @f.FeedbackStatus.StatusName
+                </div>
+                <p>
+                    @(
+            (MarkupString)f.OwnerNotes
+            )
+                </p>
+            }
+        }
+    </div>
+    }
+@if (archived?.Count > 0)
+{
+    <div>
+        <h2>Archived Feedbacks</h2>
+        <p>There are your feedbacks that were active but vehicle model is discontinued.</p>
+        @foreach (var f in archived)
+        {
+            <hr />
+            <div>
+                @f.Feedback
+            </div>
+            <p>@f.DateCreated.ToString("MM.dd.yyyy")</p>
+            <p>Total Votes:@f.UserVotes.Count</p>
+            <p>@f.VehicleModel.VehicleName</p>
+            <p>@f.Description</p>
+            @if (f.FeedbackStatus is not null)
+            {
+                <div>
+                    @f.FeedbackStatus.StatusName
+                </div>
+                <p>
+                    @(
+        (MarkupString)f.OwnerNotes
+        )
+                </p>
+            }
+        }
+    </div>
+        }
+
+
+@if (rejected?.Count > 0)
+{
+    <div>
+        <h2>Rrejected Feedbacks</h2>
+        <p>There are your feedbacks that were not deemed to be a true fact.</p>
+        @foreach (var f in archived)
+        {
+            <hr />
+            <div>
+                @f.Feedback
+            </div>
+            <p>@f.DateCreated.ToString("MM.dd.yyyy")</p>
+            <p>Total Votes:@f.UserVotes.Count</p>
+            <p>@f.VehicleModel.VehicleName</p>
+            <p>@f.Description</p>
+            @if (f.FeedbackStatus is not null)
+            {
+                <div>
+                    @f.FeedbackStatus.StatusName
+                </div>
+                <p>
+                    @(
+        (MarkupString)f.OwnerNotes
+        )
+                </p>
+            }
+        }
+    </div>
+        }
+
+    
+
+
+          @if (pending?.Count > 0) {
+        <div>
+            <h2>Pending Feedbacks</h2>
+            <p>There are your feedbacks that have not yet been reviewed by the administrators.</p>
+            @foreach (var f in pending) {
+                <hr />
+                <div>
+                    @f.Feedback
+                </div>
+                <p>@f.DateCreated.ToString("MM.dd.yyyy")</p>
+                <p>Total Votes:@f.UserVotes?.Count</p>
+                <p>@f.VehicleModel.VehicleName</p>
+                <p>@f.Description</p>
+                @if (f.FeedbackStatus is not null) {
+                    <div>
+                        @f.FeedbackStatus.StatusName
+                    </div>
+                    <p>
+                        @((MarkupString)f.OwnerNotes)
+                    </p>
+                }
+            }
+        </div>
+}
+@code {
+    private UserModel loggedInUser;
+    private List<FeedbackModel> submissions;
+    private List<FeedbackModel> confirmed;
+    private List<FeedbackModel> archived;
+    private List<FeedbackModel> pending;
+    private List<FeedbackModel> rejected;
+
+    protected async override Task OnInitializedAsync() {
+        loggedInUser = await userData.GetUserFromAuthenticationAsync("abc-123");
+        var results = await feedbackData.GetUsersFeedbacks(loggedInUser.Id);
+        if (loggedInUser is not null &&results is not null) {
+            submissions = results.OrderByDescending(f => f.DateCreated).ToList();
+            confirmed = submissions.Where(f => f.ConfirmedForRelease && f.Archived == false && f.Rejected == false).ToList();
+            archived = submissions.Where(f => f.Archived && f.Rejected == false).ToList();
+            pending = submissions.Where(f => f.ConfirmedForRelease==false && f.Rejected == false).ToList();
+            rejected = submissions.Where(f => f.Rejected ==true).ToList();
+
+        }
+    }
+    private void ClosePage(){
+        navManager.NavigateTo("/");
+    }
+}

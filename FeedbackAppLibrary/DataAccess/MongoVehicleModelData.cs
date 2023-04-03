@@ -12,7 +12,7 @@ public class MongoVehicleModelData : IVehicleModelData {
 	}
 	public async Task<List<VehicleModel>> GetAllVehicleModelsAsync() {
 		var output = _cache.Get<List<VehicleModel>>(CacheName);
-		if (output is null) {
+		if (output is null || output.Count == 0) {
 			var results = await _vehicleModels.FindAsync(_ => true);
 			output = results.ToList();
 			_cache.Set(CacheName, output, TimeSpan.FromDays(1));

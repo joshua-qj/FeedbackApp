@@ -1,0 +1,82 @@
+﻿@page "/Details/{Id}"
+@inject IFeedbackData feedbackData
+@inject NavigationManager navManager
+
+
+<h3>Feedback Details</h3>
+<div>
+    <div>
+        @if (feedback is not null) {
+            <div>
+                <div>
+                    <div>
+                        <div>@GetUpvoteTopText()</div>
+                        <span class="oi oi-caret-top"></span>
+                        <div>@GetUpvoteBottomText()</div>
+                    </div>
+                    <div>@feedback.DateCreated.ToString("MM.dd.yyyy")</div>
+                </div>
+            </div>
+            <div>
+                <div>
+                    <div>@feedback.Feedback</div>
+                    <div>@feedback.Author.DisplayName</div>
+                    <div>@feedback.Description</div>
+                    <div>@feedback.VehicleModel.VehicleName</div>
+
+                </div>
+                <div>
+                    <button @onclick="ClosePage"></button>
+                    </div>
+            </div>
+
+        }
+    </div>
+</div>
+
+@if (feedback?.FeedbackStatus is not null) {
+    <div>
+    <div>
+        <div>     </div>
+        <div>
+            <div>
+                @feedback.FeedbackStatus.StatusName
+            </div>
+            <div>
+                @((MarkupString)feedback.OwnerNotes)
+            </div>
+            </div>
+
+    </div>
+    </div>
+}
+@code {
+    [Parameter]
+    public string Id { get; set; }
+
+    private FeedbackModel feedback;
+
+    protected override async Task OnInitializedAsync() {
+        feedback = await feedbackData.GetFeedback(Id);
+
+    }
+    private void ClosePage() {
+        navManager.NavigateTo("/");
+    }
+    private string GetUpvoteTopText() {
+        if (feedback.UserVotes?.Count > 0) {
+            return feedback.UserVotes.Count.ToString("000");
+        }
+        else {
+            return "Click To";
+        }
+    }
+    private string GetUpvoteBottomText() {
+        if (feedback.UserVotes?.Count > 1) {
+            return "Upvotes";
+        }
+        else {
+            return "Upvote";
+        }
+    }
+}

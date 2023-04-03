@@ -7,8 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Models\" />
-    <Folder Include="Components\" />
+    <Content Remove="Pages\NotAuthorized.razor" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="wwwroot\jimages\" />
   </ItemGroup>
 
@@ -24,6 +26,18 @@
 
   <ItemGroup>
     <ProjectReference Include="..\FeedbackAppLibrary\FeedbackAppLibrary.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <UpToDateCheckInput Remove="Pages\NotAuthorized.razor" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="Pages\NotAuthorized.razor" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Pages\NotAuthorized.razor" />
   </ItemGroup>
 
 

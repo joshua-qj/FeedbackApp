@@ -8,6 +8,6 @@ public  class UserModel {
   public string LastName { get; set; }
   public string DisplayName { get; set; }
   public string EmailAddress { get; set; }
-  public List<BasicFeedbackModel> AuthoredFeedbacks { get; set; }
-  public List<BasicFeedbackModel> VotedOnFeedbacks { get; set; }
+  public List<BasicFeedbackModel> AuthoredFeedbacks { get; set; }= new List<BasicFeedbackModel>();
+  public List<BasicFeedbackModel> VotedOnFeedbacks { get; set; }=new List<BasicFeedbackModel>();
 }

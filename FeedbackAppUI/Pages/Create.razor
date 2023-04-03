@@ -1,0 +1,107 @@
+﻿@page "/Create"
+@attribute [Authorize]
+@using FeedbackAppUI.Components
+@using FeedbackAppUI.Models
+@inject IFeedbackData feedbackData
+@inject AuthenticationStateProvider authProvider
+@inject IVehicleModelData vehicleModelData
+@inject NavigationManager navManager
+@inject IUserData userData
+
+
+<h1>Thank you for taking the time to give us feedback.</h1>
+<div>
+    <div>
+        <div>
+            <button @onclick="ClosePage"></button>
+        </div>
+        @if (vehicleModels is not null) {
+            
+        }
+        <EditForm Model="feedback" OnValidSubmit="CreateFeedback">
+<DataAnnotationsValidator></DataAnnotationsValidator>
+<ValidationSummary></ValidationSummary>
+<div>
+    <label for="feedback-text">Feedback</label>
+                <div>
+                    Are you satisfied with your experience?
+                </div>   
+                <div>
+                   Tell us about your experience?
+                </div>
+                <InputText id="feedback-text" @bind-Value="feedback.Feedback" />
+
+</div>
+            <div>
+                <label for="description-text">Description</label>
+
+
+                <div>
+                    <label for="model-text">Model</label>
+                    <div>Choose one model</div>
+                    <div>
+                        <MyInputRadioGroup id="model-text" @bind-Value="feedback.VehicleModelId">
+                            @foreach (var m in vehicleModels)
+                            {
+                               <div>
+                                   <InputRadio Value="@m.Id" id="@m.Id" />
+                                   <label for="@m.Id">@m.VehicleName - @m.VehicleDescption</label>
+                               </div>
+                            }
+
+                        </MyInputRadioGroup>
+                    </div>
+                </div>
+                <div>
+                    Briefly  describe your feedback
+                </div>
+                <InputTextArea id="description-text" @bind-Value="feedback.Description" />
+                <div>
+                    Microsoft can email you about your feedback.
+                </div>
+                
+                <div>
+                    <button type="submit">Feedback</button>
+            </div>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    private CreateFeedbackUIModel feedback = new();
+    private List<VehicleModel> vehicleModels;
+    private UserModel loggedInUser;
+
+    protected async override Task OnInitializedAsync() {
+        vehicleModels = await vehicleModelData.GetAllVehicleModelsAsync();
+        var authState = await authProvider.GetAuthenticationStateAsync();
+        string objectId = authState.User.Claims.FirstOrDefault(c => c.Type.Contains("objectidentifier"))?.Value;
+        loggedInUser = await userData.GetUserFromAuthenticationAsync(objectId);
+    }
+    private void ClosePage(){
+        navManager.NavigateTo("/");
+    }
+    private async Task CreateFeedback(){
+        FeedbackModel f = new();
+        // this model from library, feedback model is from form page
+        //don't use basicuser or basicfeedback, use constructor to creat a CreateFeedbackUIModel.
+        //Coz CreateFeedbackUIModel is in UI, don't let library class depenf on UI.
+        //and CreateFeedbackUIModel model has ui specific code. i.e.   [Required]
+        //[MaxLength(100)], it's not suit to put into class library.
+        //use manul mapping.
+        f.Feedback = feedback.Feedback;
+        f.Description = feedback.Description;
+        f.Author = new BasicUserModel(loggedInUser);
+        f.VehicleModel = vehicleModels.Where(m => m.Id == feedback.VehicleModelId).FirstOrDefault();
+
+        //check
+        if (f.VehicleModel is null) {
+            feedback.VehicleModelId = "";
+            return;
+        }
+        await feedbackData.CreateFeedback(f);
+        feedback = new();//wipe it out
+        ClosePage();
+    }
+}

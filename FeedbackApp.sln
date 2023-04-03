@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.3.32922.545
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FeedbackAppUI", "FeedbackAppUI\FeedbackAppUI.csproj", "{833C4D7D-AD22-46E1-A9BE-9FBCA244CCE9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FeedbackAppUI", "FeedbackAppUI\FeedbackAppUI.csproj", "{833C4D7D-AD22-46E1-A9BE-9FBCA244CCE9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FeedbackAppLibrary", "FeedbackAppLibrary\FeedbackAppLibrary.csproj", "{62A8638C-BAFD-455B-BA3F-054948C6A1AD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FeedbackAppLibrary", "FeedbackAppLibrary\FeedbackAppLibrary.csproj", "{62A8638C-BAFD-455B-BA3F-054948C6A1AD}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{0578F7BE-C27B-4DEA-8675-DFB4C35E0941}"
 	ProjectSection(SolutionItems) = preProject
