@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>c988fe67-6ba5-4bde-b339-2b3cf85bbeaa</UserSecretsId>
   </PropertyGroup>
@@ -11,22 +11,19 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="wwwroot\jimages\" />
+    <Folder Include="wwwroot\images\" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Identity.Web" Version="1.26.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.QuickGrid" Version="0.1.0-alpha.22351.1" />
+    <PackageReference Include="Microsoft.Identity.Web" Version="2.9.0" />
 	  <!--This package enables ASP.NET Core web apps and web APIs to use the Microsoft identity platform (formerly Azure AD v2.0).
 	  This package is specifically used for web applications, which sign-in users, and protected web APIs, which optionally call downstream web APIs.-->
 
-	  <PackageReference Include="Microsoft.Identity.Web.UI" Version="1.26.0" />
+	  <PackageReference Include="Microsoft.Identity.Web.UI" Version="2.9.0" />
 	  <!--This package enables UI for ASP.NET Core Web apps that use Microsoft.Identity.Web.-->
 
 </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\FeedbackAppLibrary\FeedbackAppLibrary.csproj" />
-  </ItemGroup>
 
   <ItemGroup>
     <UpToDateCheckInput Remove="Pages\NotAuthorized.razor" />
@@ -39,6 +36,12 @@
   <ItemGroup>
     <None Include="Pages\NotAuthorized.razor" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\FeedbackAppLibrary\FeedbackAppLibrary.csproj" />
+  </ItemGroup>
+
+
 
 
 

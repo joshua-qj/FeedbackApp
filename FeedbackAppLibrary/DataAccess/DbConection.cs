@@ -9,8 +9,8 @@ namespace FeedbackAppLibrary.DataAccess {
     private string _connectionId = "MongoDB";
     //This "MongoDB" is appsettings "MongoDB"
     public string DbName { get; private set; }
-    public string ModelCollectionName { get; private set; } = "models";
-    public string StatusCollectionName { get; private set; } = "statuses";
+    public string VehicleModelCollectionName { get; private set; } = "vehicleModels";
+    public string SalesPersonCollectionName { get; private set; } = "salespeople";
     public string UserCollectionName { get; private set; } = "users";
     public string FeedbackCollectionName { get; private set; } = "feedbacks";
     //above 4 collectionname are available externally
@@ -20,8 +20,8 @@ namespace FeedbackAppLibrary.DataAccess {
     //where create transactional content in which case we have to connect the database
     // directly instead of using an exsiting an open connection to a collection.
     //therefore we use this Client externally .
-    public IMongoCollection<VehicleModel> ModelCollection { get; private set; }
-    public IMongoCollection<StatusModel> StatusCollection { get; private set; }
+    public IMongoCollection<VehicleModel> VehicleModelCollection { get; private set; }
+    public IMongoCollection<SalespersonModel> SalesPersonCollection { get; private set; }
     public IMongoCollection<UserModel> UserCollection { get; private set; }
     public IMongoCollection<FeedbackModel> FeedbackCollection { get; private set; }
 
@@ -34,8 +34,8 @@ namespace FeedbackAppLibrary.DataAccess {
       //can be replaced by using extensions.configuratrion.binder nuget package, _config.get value...
       _db = Client.GetDatabase(DbName);
 
-      ModelCollection = _db.GetCollection<VehicleModel>(ModelCollectionName);
-      StatusCollection = _db.GetCollection<StatusModel>(StatusCollectionName);
+      VehicleModelCollection = _db.GetCollection<VehicleModel>(VehicleModelCollectionName);
+      SalesPersonCollection = _db.GetCollection<SalespersonModel>(SalesPersonCollectionName);
       UserCollection = _db.GetCollection<UserModel>(UserCollectionName);
       FeedbackCollection = _db.GetCollection<FeedbackModel>(FeedbackCollectionName);
       //wire up collection

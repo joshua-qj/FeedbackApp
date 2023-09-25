@@ -1,68 +1,44 @@
 ﻿@page "/admin"
-@attribute [Authorize(Policy ="Admin")]
+@attribute [Authorize(Policy = "Admin")]
 @inject IFeedbackData feedbackData
 @inject IUserData userData
 @inject NavigationManager navManager
 
 
-<h1>Pending Submission</h1>
-<div>
-    <div>
+<h1 class="page-heading text-uppercase mb-4">Pending Submission</h1>
+<div class="row">
+    <div class="feedbacks-count col-8 mt-2">
         @submissions?.Count Sunmissions
     </div>
-    <div>
-        <button @onclick="ClosePage"></button>
+    <div class="col-4 close-button-section">
+        <button class="btn btn-close" @onclick="ClosePage"></button>
     </div>
 </div>
 
-@if (submissions is not null) {
+@if (submissions is not null && submissions.Count()>0) {
     foreach (var s in submissions) {
-        <div>
-            <div>
-                <button @onclick="(()=>ConfirmSubmission(s))">Confirm</button>
-                <button @onclick="(()=>RejectSubmission(s))">Reject</button>
+        <div class="row submission">
+            <div class="col-lg-2 col-md-3 col-sm-4">
+
             </div>
-            <div>
+            <div class="col-lg-10 col-md-9 col-sm-8">
                 <div>
-                    @if (currentEditingTitle == s.Id) {
-                        <EditForm Model="@editedTitle" OnSubmit="(()=>SaveTitle(s))">
-                            <InputText @bind-Value="editedTitle"></InputText>
-                            <button type="submit">
-                                <span class="oi oi-check"></span>
-                            </button>
-                            <button @onclick="(()=>currentEditingTitle=string.Empty)">
-                                <span class="oi oi-x"></span>
-                            </button>
-                        </EditForm>
-                    }
-                    else {
-                        @s.Feedback
-                        <span class="oi oi-pencil" @onclick="(()=>EditTitle(s))"></span>
-                    }
+                    <div class="feedback-detail-date">
+                        <div>@s.DateCreated.ToString("MM.dd.yyyy")</div>
+                    </div>
+                    <div class="feedback-detail-text">
+                        <div class="fw-bold mb-2 feedback-detail-feedback">@s.Feedback</div>
+                        @*                        <div class="mb-2 feedback-detail-author">@feedback.Author.DisplayName</div>
+                <div class="mb-2">@feedback.Description</div>*@
+                        <div class="feedback-entry-text-vehiclemodel">@s.VehicleModel.VehicleModelName</div>
+                    </div>
+          
                 </div>
+
                 <div>
-                    @s.VehicleModel.VehicleName
+                 @*   @s.Author.DisplayName*@
                 </div>
-                <div>
-                    @s.Author.DisplayName
-                </div>
-                <div>
-                    @if (currentEditingDescription == s.Id) {
-                        <EditForm Model="@editedDescription" OnSubmit="(()=>SaveDescription(s))">
-                            <InputText @bind-Value="editedDescription"></InputText>
-                            <button type="submit">
-                                <span class="oi oi-check"></span>
-                            </button>
-                            <button @onclick="(()=>currentEditingDescription=string.Empty)">
-                                <span class="oi oi-x"></span>
-                            </button>
-                        </EditForm>
-                    }
-                    else {
-                        @s.Description
-                        <span class="oi oi-pencil" @onclick="(()=>EditDescription(s))"></span>
-                    }
-                </div>
+
             </div>
         </div>
 
@@ -82,52 +58,19 @@
 @code {
     //private UserModel loggedInUser;
     private List<FeedbackModel> submissions;
-    private FeedbackModel editingModel;
-    private string currentEditingTitle = "";
-    private string editedTitle = "";
-    private string currentEditingDescription = "";
-    private string editedDescription = "";
+
 
     protected async override Task OnInitializedAsync() {
         submissions = await feedbackData.GetAllFeedbacksWaitingForConfirmed();
 
     }
     private async Task ConfirmSubmission(FeedbackModel submission) {
-        submission.ConfirmedForRelease = true;
+        submission.Confirmed = true;
         submissions.Remove(submission);
         //clear local list.
         await feedbackData.UpdateFeedback(submission);
     }
-    private async Task RejectSubmission(FeedbackModel submission) {
-        submission.Rejected = true;
-        submissions.Remove(submission);
-        await feedbackData.UpdateFeedback(submission);
-    }
-    private void EditTitle(FeedbackModel model) {
-        editingModel = model;
-        editedTitle = model.Feedback;
-        currentEditingTitle = model.Id;
-        currentEditingDescription = "";
 
-    }
-    private async Task SaveTitle(FeedbackModel model) {
-        currentEditingTitle = string.Empty;
-        model.Feedback = editedTitle;
-        await feedbackData.UpdateFeedback(model);
-    }
-
-    private void EditDescription(FeedbackModel model) {
-        editingModel = model;
-        editedDescription = model.Description;
-        currentEditingTitle = "";
-        currentEditingDescription = model.Id;
-
-    }
-    private async Task SaveDescription(FeedbackModel model) {
-        currentEditingDescription = string.Empty;
-        model.Description = editedDescription;
-        await feedbackData.UpdateFeedback(model);
-    }
     private void ClosePage() {
         navManager.NavigateTo("/");
     }

@@ -23,8 +23,8 @@ public static class RegisterServices {
     //blazor server, it's already include memory cache package,
     //library project need to install a memory package, it's not a web project.
     builder.Services.AddSingleton<IDbConection, DbConection>();
-    builder.Services.AddSingleton<IVehicleModelData,MongoVehicleModelData>();
-    builder.Services.AddSingleton<IStatusData,MongoStatusData>();
+    builder.Services.AddSingleton<IVehicleData,MongoVehicleData>();
+    builder.Services.AddSingleton<ISalespersonData,MongoSalespersonData>();
     builder.Services.AddSingleton<IFeedbackData, MongoFeedbackData>();
     builder.Services.AddSingleton<IUserData,MongoUserData>();
     //each of four,<IVehicleModelData,MongoVehicleModelData> , <IStatusData,MongoStatusData>

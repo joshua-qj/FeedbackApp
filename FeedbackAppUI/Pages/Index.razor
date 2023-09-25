@@ -1,105 +1,144 @@
 ﻿@page "/"
-
-@inject IVehicleModelData vehicleModelData
-@inject IStatusData statusData
+@inject AuthenticationStateProvider authProvider
+@inject IVehicleData vehicleModelData
+@inject ISalespersonData salesPersonData
 @inject IUserData userData
 @inject IFeedbackData feedbackData
 @inject NavigationManager navManager
 @inject ProtectedSessionStorage sessionStorage
 
-<h1>Feedbacks</h1>
-<div>
-    <button>Feedback</button>
+<h1 class="page-heading text-uppercase mb-4">Customer Feedbacks</h1>
+<div class="feedback-container">
+    <button @onclick="LoadCreatePage" class="feedback-btn btn btn-outline-light btn-lg text-uppercase">Feedback</button>
 </div>
 
-<div>
-    <div>
+<div class="row">
+    <div class="feedbacks-count col-md-4 text-light mt-2">
         @feedbacks?.Count Feedbacks
     </div>
-    <div>
-        <button @onclick="(()=>OrderByNew(true))">New</button>
-        <button @onclick="(()=>OrderByNew(false))">Popular</button>
+    <div class="col-md-4 col-xl-5 btn-group">
+        <button class="btn btn-order @SortedByNewClass(true)" @onclick="(()=>OrderByNew(true))">New</button>
+        <button class="btn btn-order @SortedByNewClass(false)" @onclick="(()=>OrderByNew(false))">Rating</button>
     </div>
-    <div>
-        <input type="text" placeholder="Search" aria-label="Search box"
+    <div class="col-md-4 col-xl-3 search-box">
+        <input type="text" placeholder="Search" aria-label="Search box" class="form-control rounded-control"
                @oninput="((txt)=>OnSearchInput((string)txt.Value))" />
     </div>
 
 </div>
 
-<div>
-    <div>
+<div class="row">
+    <div class="col-md-8 col-xl-9">
         @if (feedbacks is not null) {
             <Virtualize Items="@feedbacks" Context="f" OverscanCount="5">
-                <div>
-                    <div>
-                        <div>
-                            @GetUpvoteTopText(f)
-                        </div>
-                        <span class="oi oi-caret-top"></span>
-                        <div>@GetUpvoteBottomText(f)</div>
-                    </div>
-                    <div>
-                        <div @onclick="(()=>OpenDetails(f))">@f.Feedback</div>
-                        <div>
-                            <div @onclick="(()=>OpenDetails(f))">
-                                @f.VehicleModel?.VehicleName
-                            </div>
-                        </div>
-                        <div>
-                            @f.FeedbackStatus?.StatusName
+                <div class="feedback-entry">
+                    <div class="feedback-entry-rating @GetFeedbackRatingClass(f)">
+                        <div class="feedback-entry-rating-text">
+                            @f.Rating.ToString()
                         </div>
                     </div>
+                    <div class="feedback-entry-text">
+                        <div>
+                            @f.FirstName @f.LastName                &nbsp     @if (f.IsContactable) {
 
+
+                                @f.EmailAddress
+                            }
+                        </div>
+
+                        <div></div>
+
+                        <div class="feedback-entry-text-title">@f.Feedback</div>
+
+                        <div class="feedback-entry-bottom ">
+                            <div class="feedback-entry-salesperson-text">
+                                <span style="background-color:lightcoral"> @f.SalesPerson.FirstName @f.SalesPerson.LastName</span>
+                            </div>
+                    
+
+
+                        @if (confirmingFeedback is null || confirmingFeedback.Id != f.Id) {
+                            <div class="feedback-entry-bottom">
+                                <button class="btn feedback-entry-text-salesperson-confirm btn-confirm" @onclick="(()=>confirmingFeedback=f)">confirm</button>
+                                @*if user click button, archivingSuggestion will be assisned s, no longer null.*@
+
+                            </div>
+                        } else {
+                            <div class="feedback-entry-bottom">
+                                <button class="btn btn-confirm btn-confirm-yes" @onclick="ConfirmFeedback">
+                                    yes
+                                </button>
+                                <button class="btn btn-confirm btn-confirm-no" @onclick="(()=>confirmingFeedback=null)">
+                                    no
+                                </button>
+                            </div>
+                        }
+                    </div>
+                    </div>
+                    <div class="feedback-entry-vehiclemodel">
+                        <div class="feedback-entry-vehiclemodel-text">
+                            @f.VehicleModel?.VehicleModelName
+                        </div>
+                    </div>
                 </div>
             </Virtualize>
             @*is not paging, allow user to have a infinitely scrolling list ,
         it only render the ones on the page plus a few extra           *@
         }
     </div>
-    <div>
-        @if (vehicleModels is not null) {
-            <div>
-                <span>Vehicle Model</span>
-                <div @onclick="(()=>OnVehicleModelClick())">All
-            </div>
-                @foreach (var m in vehicleModels) {
-                    <div @onclick="(()=>OnVehicleModelClick(m.VehicleName))">@m.VehicleName</div>
-                
-            }
-            </div>
-        }
-        @if (statuses is not null) {
-            <div>
-                <span>Status</span>
-                <div @onclick="(()=>OnStatusClick())">All</div>
-                @foreach (var s in statuses)
-                {
-                    <div @onclick="(()=>OnStatusClick(s.StatusName))">@s.StatusName</div>
+    <div class="col-md-4 col-xl-3">
+
+        @if (salesPeople is not null) {
+            <div class="statuses">
+                <span class="text-uppercase fw-bold">Salesperson</span>
+                <div class="@GetSelectedStatus()" @onclick="(()=>OnSalespersonClick())">All</div>
+                @foreach (var s in salesPeople) {
+                    <div class="@GetSelectedStatus(s.DisplayName)" @onclick="(()=>OnSalespersonClick(s.FirstName))">@s.FirstName @s.LastName</div>
                 }
             </div>
-            
+        }
+        @if (vehicleModels is not null) {
+            <div class="vehicleModels">
+                <span class="text-uppercase fw-bold">Vehicle Model</span>
+                <div class="@GetSelectedVehicleModel()" @onclick="(()=>OnVehicleModelClick())">
+                    All
+                </div>
+                @foreach (var m in vehicleModels) {
+                    <div class="@GetSelectedVehicleModel(m.VehicleModelName)" @onclick="(()=>OnVehicleModelClick(m.VehicleModelName))">@m.VehicleModelName</div>
+
+                }
+            </div>
         }
     </div>
 </div>
 @code {
+    private UserModel loggedInUser;
     private List<FeedbackModel> feedbacks;
     private List<VehicleModel> vehicleModels;
-    private List<StatusModel> statuses;
+    private List<SalespersonModel> salesPeople;
+    private FeedbackModel confirmingFeedback;
 
     private string selectedVehicleModel = "All";
-    private string selectedStatus = "All";
+    private string selectedSalesPerson = "All";
     private string searchText = "";
     bool isSortedByNew = true;
 
     protected async override Task OnInitializedAsync() {
-        vehicleModels = await vehicleModelData.GetAllVehicleModelsAsync();
-        statuses = await statusData.GetStatuses();
+        vehicleModels = await vehicleModelData.GetAllVehiclesAsync();
+        salesPeople = await salesPersonData.GetActiveSalespeople();
+
     }
+
+    private void LoadCreatePage() {
+        navManager.NavigateTo("/Create");
+    }
+
+
+
     protected async override Task OnAfterRenderAsync(bool firstRender) {
         if (firstRender) {
             await LoadFilterState(); //load data from sesstion storage, after firstrender.
-            await FilterSuggestions();
+            await FilterFeedbacks();
             StateHasChanged();
         }
     }
@@ -113,7 +152,7 @@
 
     private async Task SaveFilterState() {
         await sessionStorage.SetAsync(nameof(selectedVehicleModel), selectedVehicleModel);
-        await sessionStorage.SetAsync(nameof(selectedStatus), selectedStatus);
+        await sessionStorage.SetAsync(nameof(selectedSalesPerson), selectedSalesPerson);
         await sessionStorage.SetAsync(nameof(searchText), searchText);
         await sessionStorage.SetAsync(nameof(isSortedByNew), isSortedByNew);
     }
@@ -121,8 +160,8 @@
         var stringResults = await sessionStorage.GetAsync<string>(nameof(selectedVehicleModel));
         selectedVehicleModel = stringResults.Success ? stringResults.Value : "All";
 
-        stringResults = await sessionStorage.GetAsync<string>(nameof(selectedStatus));
-        selectedStatus = stringResults.Success ? stringResults.Value : "All";
+        stringResults = await sessionStorage.GetAsync<string>(nameof(selectedSalesPerson));
+        selectedSalesPerson = stringResults.Success ? stringResults.Value : "All";
 
         stringResults = await sessionStorage.GetAsync<string>(nameof(searchText));
         searchText = stringResults.Success ? stringResults.Value : "";
@@ -130,24 +169,24 @@
         var boolResults = await sessionStorage.GetAsync<bool>(nameof(isSortedByNew));
         isSortedByNew = boolResults.Success ? boolResults.Value : true;
     }
-    private async Task FilterSuggestions() {
-        var output = await feedbackData.GetAllFeedbacks();
+    private async Task FilterFeedbacks() {
+        var output = await feedbackData.GetAllFeedbacksWaitingForConfirmed();
         if (selectedVehicleModel != "All") {
-            output = output.Where(f => f.VehicleModel?.VehicleName == selectedVehicleModel).ToList();
+            output = output.Where(f => f.VehicleModel?.VehicleModelName == selectedVehicleModel).ToList();
         }
-        if (selectedStatus != "All") {
-            output = output.Where(f => f.FeedbackStatus?.StatusName == selectedStatus).ToList();
+        if (selectedSalesPerson != "All") {
+            output = output.Where(f => f.SalesPerson.FirstName == selectedSalesPerson).ToList();
         }
         if (string.IsNullOrWhiteSpace(searchText) == false) {
             output = output.Where(f =>
                 f.Feedback.Contains(searchText, StringComparison.InvariantCultureIgnoreCase) ||
-            f.Description.Contains(searchText, StringComparison.InvariantCultureIgnoreCase)).ToList();
+            f.FirstName.Contains(searchText, StringComparison.InvariantCultureIgnoreCase) ||
+            f.LastName.Contains(searchText, StringComparison.InvariantCultureIgnoreCase)).ToList();
         }
         if (isSortedByNew) {
             output = output.OrderByDescending(f => f.DateCreated).ToList();
-        }
-        else {
-            output = output.OrderByDescending(f => f.UserVotes.Count).
+        } else {
+            output = output.OrderByDescending(f => f.Rating).
             ThenByDescending(f => f.DateCreated).ToList();
         }
         feedbacks = output;
@@ -156,40 +195,84 @@
 
     private async Task OrderByNew(bool isNew) {
         isSortedByNew = isNew;
-        await FilterSuggestions();
+        await FilterFeedbacks();
     }
     private async Task OnSearchInput(string searchInput) {
         searchText = searchInput;
-        await FilterSuggestions();
+        await FilterFeedbacks();
     }
     private async Task OnVehicleModelClick(string vehicleModel = "All") {
         selectedVehicleModel = vehicleModel;
-        await FilterSuggestions();
+        await FilterFeedbacks();
     }
-    private async Task OnStatusClick(string status = "All") {
-        selectedStatus = status;
-        await FilterSuggestions();
-    }
-
-    private string GetUpvoteTopText(FeedbackModel feedback) {
-        if (feedback.UserVotes?.Count > 0) {
-            return feedback.UserVotes.Count.ToString("000");
-        }
-        else {
-            return "Click To";
-        }
+    private async Task OnSalespersonClick(string salesPerson = "All") {
+        selectedSalesPerson = salesPerson;
+        await FilterFeedbacks();
     }
 
-    private string GetUpvoteBottomText(FeedbackModel feedback) {
-        if (feedback.UserVotes?.Count > 1) {
-            return "Upvotes";
+
+
+
+
+    private string SortedByNewClass(bool isNew) {
+        if (isNew == isSortedByNew) {
+            return "sort-selected";
+        } else {
+            return "";
         }
-        else {
-            return "Upvote";
+
+
+    }
+    private string GetVoteClass(FeedbackModel feedback) {
+        //if (feedback.UserVotes is null || feedback.UserVotes.Count==0) {
+        //    return "feedback-entry-no-votes";
+        //}
+        //else if(feedback.UserVotes.Contains(loggedInUser?.Id)) {
+        //    return "feedback-entry-voted";
+        //}
+        //else {
+        return "feedback-entry-not-voted";
+        //}
+    }
+
+    private string GetFeedbackRatingClass(FeedbackModel feedback) {
+        if (feedback is null || string.IsNullOrWhiteSpace(feedback.Rating.ToString())) {
+            return "feedback-entry-rating-none";
+        }
+        string output = feedback.Rating.ToString() switch {
+            "Excellent" => "feedback-entry-rating-excellent",
+            "Very Good" => "feedback-entry-rating-verygood",
+            "Good" => "feedback-entry-rating-good",
+            "Fair" => "feedback-entry-rating-fair",
+            "Poor" => "feedback-entry-rating-poor",
+            _ => "feedback-entry-rating-none"
+        };
+        return output;
+    }
+
+    private string GetSelectedVehicleModel(string vehicleModel = "All") {
+        if (vehicleModel == selectedVehicleModel) {
+            return "selected-VehicleModel";
+        } else {
+            return "";
         }
     }
 
-    private void OpenDetails(FeedbackModel feedback) {
-        navManager.NavigateTo($"/details/{feedback.Id}");
+    private string GetSelectedStatus(string status = "All") {
+        if (status == selectedSalesPerson) {
+            return "selected-status";
+        } else {
+            return "";
+        }
     }
+
+    private async Task ConfirmFeedback() {
+        confirmingFeedback.Confirmed = true;
+        await feedbackData.UpdateFeedback(confirmingFeedback);
+        feedbacks.Remove(confirmingFeedback);
+        confirmingFeedback = null;
+        await FilterFeedbacks(); //reload cache, pull the new version of suggestions from database, if don't do this,
+                                 // the archived suggestion will be disappear. because it is remove from local storage.
+    }
+
 }

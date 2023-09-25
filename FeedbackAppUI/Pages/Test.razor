@@ -1,0 +1,34 @@
+﻿@page "/Test"                       
+ 
+<h1>Test</h1>
+<EditForm class="confirm-edit-form" Model="@Model" OnSubmit="(()=>SaveTitle())">
+           
+
+    <InputText class="form-control confirm-edit-field" @bind-Value="Model.Value" />
+                            <button class="btn" type="submit">
+                                <span class="oi oi-check submission-edit-confirm"></span>
+                            </button>
+                            <button type="button" class="btn" @onclick="(()=>currentEditingTitle=string.Empty)">
+                                <span></span>
+                            </button>
+         
+                        </EditForm>
+
+@code {
+
+    private string currentEditingTitle = "";
+    private string editedTitle = "";
+    private string currentEditingDescription = "";
+    private string editedDescription = "";
+
+        public class FormModel {
+        public string Value { get; set; }
+    }
+
+    public FormModel Model { get; set; } = new FormModel();
+  
+
+    public void SaveTitle(){
+       Model.Value = "ook";
+          }
+}

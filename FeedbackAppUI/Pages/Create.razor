@@ -1,88 +1,152 @@
 ﻿@page "/Create"
-@attribute [Authorize]
-@using FeedbackAppUI.Components
-@using FeedbackAppUI.Models
+@using FeedbackAppUI.Models;
+@using FeedbackAppLibrary.Models;
+@*@attribute [Authorize]*@
 @inject IFeedbackData feedbackData
 @inject AuthenticationStateProvider authProvider
-@inject IVehicleModelData vehicleModelData
+@inject IVehicleData vehicleModelData
 @inject NavigationManager navManager
-@inject IUserData userData
+@inject ISalespersonData salesPersonData
 
 
-<h1>Thank you for taking the time to give us feedback.</h1>
-<div>
-    <div>
-        <div>
-            <button @onclick="ClosePage"></button>
+<h1 class="page-heading text-uppercase mb-4">Thank you for taking the time to give us feedback.</h1>
+<div class="row justify-content-center create-form">
+    <div class="col-xl-8 col-lg-10 form-layout">
+        <div class="close-button-section">
+            <button class="btn btn-close" @onclick="ClosePage"></button>
         </div>
         @if (vehicleModels is not null) {
-            
+
         }
         <EditForm Model="feedback" OnValidSubmit="CreateFeedback">
-<DataAnnotationsValidator></DataAnnotationsValidator>
-<ValidationSummary></ValidationSummary>
-<div>
-    <label for="feedback-text">Feedback</label>
-                <div>
-                    Are you satisfied with your experience?
-                </div>   
-                <div>
-                   Tell us about your experience?
-                </div>
-                <InputText id="feedback-text" @bind-Value="feedback.Feedback" />
-
-</div>
-            <div>
-                <label for="description-text">Description</label>
+            <DataAnnotationsValidator></DataAnnotationsValidator>
+            <ValidationSummary></ValidationSummary>
+            <h4 class="page-heading text-uppercase mb-4" style="color:black">feedback</h4>
+            <div class="input-section">
+                <label class="form-label fw-bold text-uppercase" for="feedback-text">Consumer Detail</label>
+                <div class="input-description ">
 
 
-                <div>
-                    <label for="model-text">Model</label>
-                    <div>Choose one model</div>
-                    <div>
-                        <MyInputRadioGroup id="model-text" @bind-Value="feedback.VehicleModelId">
-                            @foreach (var m in vehicleModels)
-                            {
-                               <div>
-                                   <InputRadio Value="@m.Id" id="@m.Id" />
-                                   <label for="@m.Id">@m.VehicleName - @m.VehicleDescption</label>
-                               </div>
-                            }
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="firstName" class="form-label">First name</label>
+                            <InputText type="text" class="form-control" id="firstName" placeholder="First name" @bind-Value="feedback.FirstName"></InputText>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="lastName" class="form-label">Last name</label>
+                            <InputText type="text" class="form-control" id="lastName" placeholder="Last name" @bind-Value="feedback.LastName"></InputText>
+                        </div>
+                        <div class="col-12">
+                            <label for="eamilAddress" class="form-label">Email Address</label>
+                            <InputText type="email" class="form-control" id="eamilAddress" placeholder="John@xxx.com.au" @bind-Value="feedback.EmailAddress"></InputText>
+                        </div>
 
-                        </MyInputRadioGroup>
+
+
                     </div>
                 </div>
-                <div>
-                    Briefly  describe your feedback
-                </div>
-                <InputTextArea id="description-text" @bind-Value="feedback.Description" />
-                <div>
-                    Microsoft can email you about your feedback.
-                </div>
-                
-                <div>
-                    <button type="submit">Feedback</button>
             </div>
+
+
+
+            <div>
+                <label class="form-label fw-bold text-uppercase" for="model-text">Model</label>
+                <div class="input-description">Choose one car model you purchased</div>
+                <div class="col-lg-8">
+                    <MyInputRadioGroup id="model-text" @bind-Value="feedback.VehicleModelId">
+                        <div class="radio-item-group row-cols-auto">
+                            @foreach (var m in vehicleModels) {
+
+                                <InputRadio Value="@m.Id" id="@m.Id" />
+                                <label for="@m.Id" class="mb-3">@m.VehicleModelName </label>
+
+                            }
+                        </div>
+                    </MyInputRadioGroup>
+                </div>
             </div>
+
+            <div class="input-section">
+                <label class="form-label fw-bold text-uppercase" for="description-text">SalesPerson</label>          <br />
+                <div class="input-description">which salesperson served you</div>
+                <div class="">
+                    <MyInputRadioGroup id="salesPerson-text" @bind-Value="feedback.SalesPersonId">
+                        <div class="radio-item-group row-cols-auto">
+                            @foreach (var s in salesPersonModels) {
+
+                                <InputRadio Value="@s.Id" id="@s.Id" />
+                                <label for="@s.Id" class="mb-3">@s.FirstName  @s.LastName</label>
+
+                            }
+                        </div>
+                    </MyInputRadioGroup>
+                </div>
+            </div>
+
+            <div class="input-section">
+                <label class="form-label fw-bold text-uppercase" for="description-text">rating</label>
+                <br />
+                <div class="input-description">Overall, how satisfied are you with recent purchase?</div>
+                <div class="">
+                    <MyInputRadioGroup id="model-text" @bind-Value="feedback.Rating">
+                        <div class="radio-item-group row-cols-auto">
+                            <InputRadio Value="5" id="excellent" />
+                            <label for="excellent">Excellent</label>
+                            <InputRadio Value="4" id="veryGood" />
+                            <label for="veryGood">Very Good</label>
+                            <InputRadio Value="3" id="good" />
+                            <label for="good">Good</label>
+                            <InputRadio Value="2" id="fair" />
+                            <label for="fair">Fair</label>
+                            <InputRadio Value="1" id="poor" />
+                            <label for="poor">Poor</label>
+                        </div>
+                    </MyInputRadioGroup>
+                </div>
+            </div>
+            <div class="input-section">
+                <label class="form-label fw-bold text-uppercase" for="feedback-text">Feedback</label>
+
+
+
+
+                <div class="input-description">   Briefly  describe your feedback   </div>
+                <InputTextArea class="form-control" id="description-text" @bind-Value="feedback.Feedback" />
+            </div>
+
+
+
+            <div class="col-12">
+                <div class="form-check">
+                    <InputCheckbox class="form-check-input " style="background-color:#39BAD8" id="IsContactable" @bind-Value="feedback.IsContactable" />
+                    <label class="form-check-label" for="contactCheck">
+                        Can Oldmac email you about your feedback if needed.
+                    </label>
+                </div>
+            </div>
+
+            <div class="center-children">  <button class="btn btn-main btn-lg text-uppercase" type="submit">Submit</button>       </div>
+
         </EditForm>
     </div>
 </div>
 
+
 @code {
     private CreateFeedbackUIModel feedback = new();
-    private List<VehicleModel> vehicleModels;
-    private UserModel loggedInUser;
+    private List<VehicleModel>? vehicleModels = new List<VehicleModel>();
+    private List<SalespersonModel>? salesPersonModels=new List<SalespersonModel>();
+
 
     protected async override Task OnInitializedAsync() {
-        vehicleModels = await vehicleModelData.GetAllVehicleModelsAsync();
-        var authState = await authProvider.GetAuthenticationStateAsync();
-        string objectId = authState.User.Claims.FirstOrDefault(c => c.Type.Contains("objectidentifier"))?.Value;
-        loggedInUser = await userData.GetUserFromAuthenticationAsync(objectId);
+        vehicleModels = await vehicleModelData.GetForSaleVehiclesAsync();
+        salesPersonModels = await salesPersonData.GetActiveSalespeople();
+
     }
-    private void ClosePage(){
+    private void ClosePage() {
         navManager.NavigateTo("/");
     }
-    private async Task CreateFeedback(){
+    private async Task CreateFeedback() {
         FeedbackModel f = new();
         // this model from library, feedback model is from form page
         //don't use basicuser or basicfeedback, use constructor to creat a CreateFeedbackUIModel.
@@ -91,13 +155,21 @@
         //[MaxLength(100)], it's not suit to put into class library.
         //use manul mapping.
         f.Feedback = feedback.Feedback;
-        f.Description = feedback.Description;
-        f.Author = new BasicUserModel(loggedInUser);
+        f.IsContactable = feedback.IsContactable;
         f.VehicleModel = vehicleModels.Where(m => m.Id == feedback.VehicleModelId).FirstOrDefault();
+        f.EmailAddress = feedback.EmailAddress;
+        f.FirstName = feedback.FirstName;
+        f.LastName = feedback.LastName;
+        f.Rating = (Rating)feedback.Rating;
+        f.SalesPerson = salesPersonModels.Where(s => s.Id == feedback.SalesPersonId).FirstOrDefault();
 
         //check
         if (f.VehicleModel is null) {
             feedback.VehicleModelId = "";
+            return;
+        }
+        if (f.SalesPerson is null) {
+            feedback.SalesPersonId = "";
             return;
         }
         await feedbackData.CreateFeedback(f);

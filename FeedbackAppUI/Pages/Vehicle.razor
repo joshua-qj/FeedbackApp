@@ -1,0 +1,148 @@
+﻿@page "/Vehicles"
+@inject NavigationManager navManager
+@inject IVehicleData vehicleData
+@using Microsoft.AspNetCore.Components.QuickGrid
+
+<h1 class="page-heading text-uppercase mb-4">Vehicles</h1>
+
+<div class="row justify-content-center detail-form">
+    <div class="col-xl-8 col-lg-10 form-layout">
+        <div class="close-button-section">
+            <button class="btn btn-close" @onclick="ClosePage"></button>
+        </div>
+        <h4 class="page-heading text-uppercase mb-4" style="color:black">Model</h4>
+
+        @if (vehicles is not null) {
+
+            <div class="grid">
+                <QuickGrid Items="@FilteredVehicles" Pagination="@pagination">
+                    @if (editVehicleModelStatus) {
+                        <EditForm class="" Model="@editingVehicle" OnSubmit="(()=>  AddOrUpdateVehicle(editingVehicle))">
+                            <DataAnnotationsValidator></DataAnnotationsValidator>
+                            <ValidationSummary></ValidationSummary>
+                            <div class="d-inline">
+                                <div class="input-group mb-3">
+                                    <span class="input-group-text" for="vehicleModelName">Model Name</span>
+                                    <InputText class="form-control" id="vehicleModelName" @bind-Value="editingVehicle.VehicleModelName" />
+                                </div>
+                                <div class=" input-group mb-3">
+                                    <span class="input-group-text" for="variant">Variant</span>
+                                    <InputText class="form-control" id="variant" @bind-Value="editingVehicle.VehicleModelVariant" />
+                                </div>
+                                <div class="form-check">
+                                    <InputCheckbox class="form-check-input " style="background-color:#39BAD8" type="checkbox" unchecked id="isDeleted" @bind-Value="editingVehicle.ForSale" />
+                                    <label class="form-check-label" for="isDeleted">
+                                        For sale
+                                    </label>
+
+
+                                </div>
+                            </div>
+
+
+
+
+
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <button class="btn" type="submit">
+                                    <span class="oi oi-check submission-edit-confirm"></span>
+                                </button>
+                                <button type="button" class="btn" @onclick="(()=>editVehicleModelStatus=false)">
+                                    <span class="oi oi-x submission-edit-reject"></span>
+                                </button>
+                            </div>
+                        </EditForm>
+
+                    } else {
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <span class="oi oi-plus submission-add-icon" type="button" @onclick=" (()=>AddVehicle(new VehicleModel()))"></span>
+                        </div>
+                        <PropertyColumn Property="@(c => c.VehicleModelName)" Title="Vehicle Model" Sortable="true" Class="" Align="Align.Center">
+                            <ColumnOptions>
+                                <div class="search-box">
+                                    <input type="search" autofocus @bind="nameFilter" @bind:event="oninput" placeholder="Vehicle name..." />
+                                </div>
+                            </ColumnOptions>
+                        </PropertyColumn>
+                        <PropertyColumn Property="@(c => c.VehicleModelVariant)" Title="Variant" Align="Align.Center" />
+                        <PropertyColumn Property="@(c => BoolToString(c.ForSale))" Title="For sale" Sortable="true" Align="Align.Center" />
+                        <TemplateColumn Title="Edit" Align="Align.Left">
+                            <div style="display:flex;">
+                                <span class="oi oi-pencil submission-edit-icon" @onclick="@(() => EditVehicle(context))"></span>
+                                @*                                <span class="oi oi-trash submission-edit-icon" @onclick="@(() => DeleteVehicle(context))">
+                        </span>*@
+                            </div>
+                        </TemplateColumn>
+
+                    }
+                </QuickGrid>
+
+            </div>
+
+
+        }
+    </div>
+</div>
+
+}
+@code {
+    [Parameter]
+    public string Id { get; set; }
+
+
+    private List<VehicleModel> vehicles = new List<VehicleModel>();
+
+    private VehicleModel editingVehicle = new VehicleModel();
+    private bool editVehicleModelStatus = false;
+    private bool addVehicleModelStatus = false;
+
+
+    PaginationState pagination = new PaginationState { ItemsPerPage = 10 };
+    IQueryable<VehicleModel>? itemsQueryable;
+    string nameFilter;
+
+    protected override async Task OnInitializedAsync() {
+        itemsQueryable = (await vehicleData.GetAllVehiclesAsync()).AsQueryable();
+        //   vehicles = await vehicleData.GetAllVehiclesAsync();
+    }
+    private void ClosePage() {
+        navManager.NavigateTo("/");
+    }
+
+    IQueryable<VehicleModel> FilteredVehicles {
+        get {
+            var result = itemsQueryable?.AsQueryable();
+            if (!string.IsNullOrEmpty(nameFilter)) {
+                result = result.Where(c => c.VehicleModelName.Contains(nameFilter, StringComparison.CurrentCultureIgnoreCase));
+            }
+            return result;
+        }
+    }
+    private void EditVehicle(VehicleModel vehicleModel) {
+
+        editVehicleModelStatus = true;
+        editingVehicle = vehicleModel;
+    }
+    private void AddVehicle(VehicleModel vehicleModel) {
+
+        editVehicleModelStatus = true;
+
+    }
+    private void DeleteVehicle(VehicleModel vehicleModel) {
+        vehicleData.DeleteVehicle(vehicleModel);
+    }
+    private void AddOrUpdateVehicle(VehicleModel vehicleModel) {
+        if (string.IsNullOrEmpty(vehicleModel.Id)) {
+            vehicleData.CreateVehicle(vehicleModel);
+            editingVehicle = new VehicleModel();
+        } else {
+            vehicleData.UpdateVehicle(vehicleModel);
+            editingVehicle = new VehicleModel();
+        }
+        editVehicleModelStatus = false;
+    }
+    private string BoolToString(bool forSale) {
+        return forSale ? "Yes" : "No";
+    }
+    //private string CastBooleanToString
+}

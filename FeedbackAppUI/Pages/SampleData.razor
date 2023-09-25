@@ -1,6 +1,6 @@
 ﻿@page "/sampledata"
-@inject IVehicleModelData vehicleModelData
-@inject IStatusData statusData
+@inject IVehicleData vehicleModelData
+@inject ISalespersonData salespersonData
 @inject IUserData userData
 @inject IFeedbackData feedbackData
 
@@ -8,16 +8,14 @@
 
 @if (vehicleModelsCreated) {
     <h4>Vehicle Models have been created</h4>
-}
-else {
+} else {
     <button class="btn btn-primary" @onclick="CreateVehicleModel">Create Vehicle Models</button>
 
 }
 @if (statusesCreated) {
     <h4>Statuses have been created</h4>
-}
-else {
-    <button class="btn btn-primary" @onclick="CreateStatuses">Create Feedback Statuses</button>
+} else {
+    <button class="btn btn-primary" @onclick="CreateSalespeople">Create Salespeople</button>
 
 }
 <button class="btn btn-danger" @onclick="GenerateSampleData">Generate Sample Data</button>
@@ -28,99 +26,88 @@ else {
     private bool statusesCreated = false;
 
     private async Task CreateVehicleModel() {
-        var vehicleModels = await vehicleModelData.GetAllVehicleModelsAsync();
+        var vehicleModels = await vehicleModelData.GetAllVehiclesAsync();
         if (vehicleModels?.Count > 3) {
             return;
         }
         VehicleModel model = new() {
-                VehicleName = "Kluger",
-                VehicleDescption = "A family SUV"
+                VehicleModelName = "Kluger",
+                VehicleModelVariant = "GX"
             };
-        await vehicleModelData.CreateVehicleModel(model);
+        await vehicleModelData.CreateVehicle(model);
 
         model = new() {
-                VehicleName = "Hilux",
-                VehicleDescption = "A Good Ute"
+                VehicleModelName = "Hilux",
+                VehicleModelVariant = "GX"
             };
-        await vehicleModelData.CreateVehicleModel(model);
+        await vehicleModelData.CreateVehicle(model);
         model = new() {
-                VehicleName = "Hiace",
-                VehicleDescption = "A Good Car"
+                VehicleModelName = "Hiace",
+                VehicleModelVariant = "GXL"
             };
-        await vehicleModelData.CreateVehicleModel(model);
+        await vehicleModelData.CreateVehicle(model);
         vehicleModelsCreated = true;
     }
 
-    private async Task CreateStatuses() {
-        var statueses = await statusData.GetStatuses();
-        if (statueses?.Count > 0) {
+    private async Task CreateSalespeople() {
+        var salespeople = await salespersonData.GetActiveSalespeople();
+        if (salespeople?.Count > 0) {
             return;
         }
-        StatusModel status = new() {
-                StatusName = "Confirmed",
-                StatusDescription = "The feedback was accepted and confirmed, thanks  your feedback"
+        SalespersonModel salesperson = new() {
+                FirstName = "Ben",
+                LastName = "Aflek"
             };
-        await statusData.CreateStatus(status);
-        status = new() {
-                StatusName = "Processing",
-                StatusDescription = "The feedback was accepted and we are processing it now"
+        await salespersonData.CreateSalesperson(salesperson);
+        salesperson = new() {
+                FirstName = "Peter",
+                LastName = "Brown"
             };
-        await statusData.CreateStatus(status);
-        status = new() {
-                StatusName = "Dismissed",
-                StatusDescription = "The feedback was accepted and completed and the feedback was not something that we are going to undertake."
+        await salespersonData.CreateSalesperson(salesperson);
+        salesperson = new() {
+                FirstName = "John",
+                LastName = "Carl"
             };
-        await statusData.CreateStatus(status);
+        await salespersonData.CreateSalesperson(salesperson);
         statusesCreated = true;
     }
 
     private async Task GenerateSampleData() {
-        UserModel user = new UserModel() {
-                FirstName = "Josh",
-                LastName = "Ding",
-                EmailAddress = "josh@test.com",
-                DisplayName = "Sample Name Josh",
-                ObjectIdentifier = "abc-123"
-            };
-        await userData.CreateUserAsync(user);
-        var foundUser = await userData.GetUserFromAuthenticationAsync("abc-123");
-        var vehicleModels = await vehicleModelData.GetAllVehicleModelsAsync();
-        var statuses = await statusData.GetStatuses();
-        HashSet<string> votes = new();
-        votes.Add("1");
-        votes.Add("2");
-        votes.Add("3");
 
-        FeedbackModel feedback = new FeedbackModel()
-            {
-                Author = new BasicUserModel(foundUser),
-                VehicleModel = vehicleModels[0],
+        var vehicleModels = await vehicleModelData.GetAllVehiclesAsync();
+        var salespeople = await salespersonData.GetActiveSalespeople();
+
+        FeedbackModel feedback = new FeedbackModel() {
+                FirstName = "Emma",
+                LastName = "Smith",
+                EmailAddress = "emma@x.com",
                 Feedback = "First feedback",
-                Description = "Good service",
-                FeedbackStatus = statuses[0],
-                UserVotes = votes,
-                SalesPerson="Jason",
-                OwnerNotes="This is the note for the feedback"
-    };
-        await feedbackData.CreateFeedback(feedback);
-        feedback = new FeedbackModel() {
-                Author = new BasicUserModel(foundUser),
-                VehicleModel = vehicleModels[1],
-                Feedback = "Second feedback",
-                Description = "Good service",
-                FeedbackStatus = statuses[1],
-                UserVotes = votes,
-                OwnerNotes = "This is the note for the feedback"
+                VehicleModel = vehicleModels[0],
+                SalesPerson = salespeople[0],
+                Rating = Rating.Excellent,
+                IsContactable=true
             };
         await feedbackData.CreateFeedback(feedback);
-        votes.Add("4");
         feedback = new FeedbackModel() {
-                Author = new BasicUserModel(foundUser),
-                VehicleModel = vehicleModels[2],
+                FirstName = "Lucy",
+                LastName = "Ann",
+                EmailAddress = "Lucy@x.com",
+                Feedback = "Second feedback",
+                VehicleModel = vehicleModels[1],
+                SalesPerson = salespeople[1],
+                Rating = Rating.Good,
+                IsContactable = true
+            };
+        await feedbackData.CreateFeedback(feedback);
+
+        feedback = new FeedbackModel() {
+                FirstName = "Cathy",
+                LastName = "Gray",
+                EmailAddress = "Cathy@x.com",
                 Feedback = "Third feedback",
-                Description = "Good service",
-                FeedbackStatus = statuses[2],
-                OwnerNotes = "This is the note for the feedback"
+                VehicleModel = vehicleModels[2],
+                SalesPerson = salespeople[2],
+                Rating = Rating.Poor,
             };
         await feedbackData.CreateFeedback(feedback);
     }

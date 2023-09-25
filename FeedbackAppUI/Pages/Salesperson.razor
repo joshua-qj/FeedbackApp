@@ -1,0 +1,147 @@
+﻿@page "/Salesperson"
+@inject NavigationManager navManager
+@inject ISalespersonData salespeopleData
+@using Microsoft.AspNetCore.Components.QuickGrid
+
+<h1 class="page-heading text-uppercase mb-4">Vehicles</h1>
+
+<div class="row justify-content-center detail-form">
+    <div class="col-xl-8 col-lg-10 form-layout">
+        <div class="close-button-section">
+            <button class="btn btn-close" @onclick="ClosePage"></button>
+        </div>
+        <h4 class="page-heading text-uppercase mb-4" style="color:black">Salespeople</h4>
+
+        @if (salespeople is not null) {
+
+            <div class="grid">
+                <QuickGrid Items="@FilteredSalespeople" Pagination="@pagination">
+                    @if (editSalespersonStatus) {
+                        <EditForm class="" Model="@editingSalesperson" OnSubmit="(()=>  AddOrUpdateVehicle(editingSalesperson))">
+                            <DataAnnotationsValidator></DataAnnotationsValidator>
+                            <ValidationSummary></ValidationSummary>
+                            <div class="d-inline">
+                                <div class="input-group mb-3">
+                                    <span class="input-group-text" for="vehicleFirstName">FirstName</span>
+                                    <InputText class="form-control" id="vehicleFirstName" @bind-Value="editingSalesperson.FirstName" />
+                                </div>
+                                <div class=" input-group mb-1">
+                                    <span class="input-group-text" for="lastName">LastName</span>
+                                    <InputText class="form-control" id="lastName" @bind-Value="editingSalesperson.LastName" />
+                                </div>
+                                <div class="form-check">
+                                    <InputCheckbox class="form-check-input " style="background-color:#39BAD8" type="checkbox" unchecked id="isResigned" @bind-Value="editingSalesperson.IsResigned" />
+                                    <label class="form-check-label" for="isResigned">
+                                        Resigned
+                                    </label>
+
+
+                                </div>
+                            </div>
+
+
+
+
+
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <button class="btn" type="submit">
+                                    <span class="oi oi-check submission-edit-confirm"></span>
+                                </button>
+                                <button type="button" class="btn" @onclick="(()=>editSalespersonStatus=false)">
+                                    <span class="oi oi-x submission-edit-reject"></span>
+                                </button>
+                            </div>
+                        </EditForm>
+
+                    } else {
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <span class="oi oi-plus submission-add-icon" type="button" @onclick=" (()=>AddSalesperson(new SalespersonModel()))"></span>
+                        </div>
+                        <PropertyColumn Property="@(c => c.FirstName)" Title="FirstName" Sortable="true" Class="" Align="Align.Center">
+                            <ColumnOptions>
+                                <div class="search-box">
+                                    <input type="search" autofocus @bind="nameFilter" @bind:event="oninput" placeholder="Firstname or Lastname..." />
+                                </div>
+                            </ColumnOptions>
+                        </PropertyColumn>
+                        <PropertyColumn Property="@(c => c.LastName)" Title="LastName" Sortable="true" Align="Align.Center" />
+                        <PropertyColumn Property="@(c => BoolToString(c.IsResigned))" Title="Resigned" Sortable="true" Align="Align.Center" />
+                        <TemplateColumn Title="Edit" Align="Align.Left">
+                            <div style="display:flex;">
+                                <span class="oi oi-pencil submission-edit-icon" @onclick="@(() => EditSalesperson(context))"></span>
+                                @*                                <span class="oi oi-trash submission-edit-icon" @onclick="@(() => DeleteVehicle(context))">
+                        </span>*@
+                            </div>
+                        </TemplateColumn>
+
+                    }
+                </QuickGrid>
+
+            </div>
+
+
+        }
+    </div>
+</div>
+
+}
+@code {
+    [Parameter]
+    public string Id { get; set; }
+
+
+    private List<SalespersonModel> salespeople = new List<SalespersonModel>();
+
+    private SalespersonModel editingSalesperson = new SalespersonModel();
+    private bool editSalespersonStatus = false;
+    private bool addSalespersonStatus = false;
+
+
+    PaginationState pagination = new PaginationState { ItemsPerPage = 10 };
+    IQueryable<SalespersonModel>? itemsQueryable;
+    string nameFilter;
+
+    protected override async Task OnInitializedAsync() {
+        itemsQueryable = (await salespeopleData.GetSalespeople()).AsQueryable();
+        //   vehicles = await vehicleData.GetAllVehiclesAsync();
+    }
+    private void ClosePage() {
+        navManager.NavigateTo("/");
+    }
+
+    IQueryable<SalespersonModel> FilteredSalespeople {
+        get {
+            var result = itemsQueryable?.AsQueryable();
+            if (!string.IsNullOrEmpty(nameFilter)) {
+                result = result.Where(c => c.FirstName.Contains(nameFilter, StringComparison.CurrentCultureIgnoreCase)
+                || c.LastName.Contains(nameFilter, StringComparison.CurrentCultureIgnoreCase));
+            }
+            return result;
+        }
+    }
+    private void EditSalesperson(SalespersonModel salespersonModel) {
+
+        editSalespersonStatus = true;
+        editingSalesperson = salespersonModel;
+    }
+    private void AddSalesperson(SalespersonModel salespersonModel) {
+
+        editSalespersonStatus = true;
+
+    }
+
+    private void AddOrUpdateVehicle(SalespersonModel salespersonModel) {
+        if (string.IsNullOrEmpty(salespersonModel.Id)) {
+            salespeopleData.CreateSalesperson(salespersonModel);
+            editingSalesperson = new SalespersonModel();
+        } else {
+            salespeopleData.UpdateSalesperson(salespersonModel);
+            editingSalesperson = new SalespersonModel();
+        }
+        editSalespersonStatus = false;
+    }
+    private string BoolToString(bool isResigned) {
+        return isResigned ? "Yes" : "No";
+    }
+    //private string CastBooleanToString
+}

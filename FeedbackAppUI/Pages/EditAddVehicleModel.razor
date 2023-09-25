@@ -1,0 +1,47 @@
+﻿@inject IVehicleData vehicleData
+
+
+<EditForm class="" Model="@editingVehicle" OnSubmit="(()=>  UpdateVehicle(editingVehicle))">
+    <DataAnnotationsValidator></DataAnnotationsValidator>
+    <ValidationSummary></ValidationSummary>
+    <div class="d-inline">
+        <div class="input-group mb-3">
+            <span class="input-group-text" for="vehicleModelName">Model Name</span>
+            <InputText class="form-control" id="vehicleModelName" @bind-Value="editingVehicle.VehicleModelName" />
+        </div>
+        <div class=" input-group mb-3">
+            <span class="input-group-text" for="variant">Variant</span>
+            <InputText class="form-control" id="variant" @bind-Value="editingVehicle.VehicleModelVariant" />
+        </div>
+        <div class="form-check">
+            <InputCheckbox class="form-check-input " style="background-color:#39BAD8" type="checkbox" id="isDeleted" @bind-Value="editingVehicle.ForSale" />
+            <label class="form-check-label" for="isDeleted">
+                For sale
+            </label>
+
+
+        </div>
+    </div>
+
+
+
+
+
+    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+        <button class="btn" type="submit">
+            <span class="oi oi-check submission-edit-confirm"></span>
+        </button>
+
+    </div>
+</EditForm>
+
+@code {
+    //[Parameter]
+    private VehicleModel editingVehicle = new VehicleModel();
+
+
+    private void UpdateVehicle(VehicleModel vehicleModel) {
+        vehicleData.UpdateVehicle(vehicleModel);
+       
+    }
+}

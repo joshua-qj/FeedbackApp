@@ -6,10 +6,10 @@ public interface IDbConection {
   string DbName { get; }
   IMongoCollection<FeedbackModel> FeedbackCollection { get; }
   string FeedbackCollectionName { get; }
-  IMongoCollection<VehicleModel> ModelCollection { get; }
-  string ModelCollectionName { get; }
-  IMongoCollection<StatusModel> StatusCollection { get; }
-  string StatusCollectionName { get; }
+  IMongoCollection<VehicleModel> VehicleModelCollection { get; }
+  string VehicleModelCollectionName { get; }
+  IMongoCollection<SalespersonModel> SalesPersonCollection { get; }
+  string SalesPersonCollectionName { get; }
   IMongoCollection<UserModel> UserCollection { get; }
   string UserCollectionName { get; }
 }

@@ -1,53 +1,56 @@
 ﻿@page "/Details/{Id}"
 @inject IFeedbackData feedbackData
 @inject NavigationManager navManager
+@inject AuthenticationStateProvider authProvider
+@inject IUserData userData
 
-
-<h3>Feedback Details</h3>
-<div>
-    <div>
+<h1 class="page-heading text-uppercase mb-4">Feedback Details</h1>
+<div class="row justify-content-center detail-form">
+    <div class="col-xl-8 col-lg-10 form-layout">
         @if (feedback is not null) {
-            <div>
-                <div>
+            <div class="row feedback-detail-row">
+                <div class="col-11 feedback-detail">
                     <div>
-                        <div>@GetUpvoteTopText()</div>
-                        <span class="oi oi-caret-top"></span>
-                        <div>@GetUpvoteBottomText()</div>
+                        <div class="@GetVoteClass()" @onclick="(()=>VoteUp())">
+                            <div class="text-uppercase">@GetUpvoteTopText()</div>
+                            <span class="oi oi-caret-top detail-upvote"></span>
+                            <div class="text-uppercase">@GetUpvoteBottomText()</div>
+                        </div>
+                        <div class="feedback-detail-date">
+                            <div>@feedback.DateCreated.ToString("MM.dd.yyyy")</div>
+                        </div>
                     </div>
-                    <div>@feedback.DateCreated.ToString("MM.dd.yyyy")</div>
+                    <div class="feedback-detail-text">
+                        <div class="fw-bold mb-2 feedback-detail-feedback">@feedback.Feedback</div>
+@*                        <div class="mb-2 feedback-detail-author">@feedback.Author.DisplayName</div>
+                        <div class="mb-2">@feedback.Description</div>*@
+                        <div class="feedback-entry-text-vehiclemodel">@feedback.VehicleModel.VehicleModelName</div>
+                    </div>
                 </div>
-            </div>
-            <div>
-                <div>
-                    <div>@feedback.Feedback</div>
-                    <div>@feedback.Author.DisplayName</div>
-                    <div>@feedback.Description</div>
-                    <div>@feedback.VehicleModel.VehicleName</div>
 
+                <div class="col-1 close-button-section">
+                    <button class="btn btn-close" @onclick="ClosePage"></button>
                 </div>
-                <div>
-                    <button @onclick="ClosePage"></button>
-                    </div>
             </div>
 
         }
     </div>
 </div>
 
-@if (feedback?.FeedbackStatus is not null) {
-    <div>
-    <div>
-        <div>     </div>
-        <div>
-            <div>
-                @feedback.FeedbackStatus.StatusName
-            </div>
-            <div>
-                @((MarkupString)feedback.OwnerNotes)
-            </div>
+@if (feedback?.SalesPerson is not null) {
+    <div class="row justify-content-center detail-form">
+        <div class="col-xl-8 col-lg-10 feedback-results form-layout">
+            <div class="@GetStatusClass()">     </div>
+            <div class="feedback-detail-status-section">
+                <div class="feedback-detail-status fw-bold mb-2 feedback-detail-feedback">
+                    @feedback.SalesPerson.DisplayName
+                </div>
+                <div class="feedback-detail-owner-notes">
+                    @((MarkupString)feedback.ManagerNote)
+                </div>
             </div>
 
-    </div>
+        </div>
     </div>
 }
 @code {
@@ -55,28 +58,77 @@
     public string Id { get; set; }
 
     private FeedbackModel feedback;
-
+    private UserModel loggedInUser;
     protected override async Task OnInitializedAsync() {
         feedback = await feedbackData.GetFeedback(Id);
-
+        loggedInUser = await authProvider.GetUserFromAuth(userData);
     }
     private void ClosePage() {
         navManager.NavigateTo("/");
     }
     private string GetUpvoteTopText() {
-        if (feedback.UserVotes?.Count > 0) {
-            return feedback.UserVotes.Count.ToString("000");
-        }
-        else {
-            return "Click To";
-        }
+        //if (feedback.UserVotes?.Count > 0) {
+        //    return feedback.UserVotes.Count.ToString("000");
+        //}
+        //else {
+        //    if (feedback.Author.Id == loggedInUser?.Id) {
+        //        return "Awaiting";
+        //    }
+        //    else {
+                return "Click To";
+            //}
+        //}
     }
     private string GetUpvoteBottomText() {
-        if (feedback.UserVotes?.Count > 1) {
-            return "Upvotes";
-        }
-        else {
+        //if (feedback.UserVotes?.Count > 1) {
+        //    return "Upvotes";
+        //}
+        //else {
             return "Upvote";
+        //}
+    }
+    private async Task VoteUp() {
+        //if (loggedInUser is not null) {
+        //    if (feedback.Author.Id == loggedInUser.Id) {
+        //        //can't vote on your own feedback
+        //        return;
+        //    }
+
+        //    if (feedback.UserVotes.Add(loggedInUser.Id) == false) {
+        //        feedback.UserVotes.Remove(loggedInUser.Id);
+        //    }
+        //    await feedbackData.UpvoteFeedback(feedback.Id, loggedInUser.Id);
+
+        //}
+        //else {
+            navManager.NavigateTo("/MicrosoftIdentity/Account/SignIn", true);
+        //}
+
+    }
+    private string GetVoteClass() {
+        //if (feedback.UserVotes is null || feedback.UserVotes.Count == 0) {
+        //    return "feedback-detail-no-votes";
+        //}
+        //else if (feedback.UserVotes.Contains(loggedInUser?.Id)) {
+        //    return "feedback-detail-voted";
+        //}
+        //else {
+            return "feedback-detail-not-voted";
+        //}
+
+    }
+
+    private string GetStatusClass() {
+        if (feedback is null || feedback.SalesPerson is null) {
+            return "feedback-detail-status-none";
         }
+        string output = feedback.SalesPerson.DisplayName switch {
+            "Confirmed" => "feedback-detail-status-confirmed",
+            "Processing" => "feedback-detail-status-processing",
+            "Rejected" => "feedback-detail-status-rejected",
+            "Archived" => "feedback-detail-status-archived",
+            _ => "feedback-detail-status-none"
+        };
+        return output;
     }
 }
